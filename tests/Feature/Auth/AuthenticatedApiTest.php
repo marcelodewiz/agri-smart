@@ -32,7 +32,7 @@ class AuthenticatedApiTest extends TestCase
             'password' => Hash::make('password'),
         ]);
 
-        $response = $this->postJson('/api/login', [
+        $response = $this->postJson(route('auth.login'), [
             'email' => $user->email,
             'password' => 'password123',
         ]);
@@ -49,5 +49,26 @@ class AuthenticatedApiTest extends TestCase
 
         $response->assertOk()
             ->assertJson(['message' => 'Deslogado com sucesso.']);
+    }
+
+    public function test_validRegisterRequest(){
+        $this->withoutExceptionHandling();
+
+        $this->postJson(route('auth.register'), [
+            'name' => 'Marcelo',
+            'email' => 'marcelo@teste.com.br',
+            'password' => '123456',
+            'password_confirmation' => '123456',
+            'nameToken' => 'teste_token'
+        ])
+            ->assertCreated();
+
+        $this->assertDatabaseHas('users',['name' => 'Marcelo']);
+
+        $response = $this->postJson(route('auth.login'), [
+            'email' => 'marcelo@teste.com.br',
+            'password' => '123456',
+        ])
+            ->assertOk();
     }
 }
